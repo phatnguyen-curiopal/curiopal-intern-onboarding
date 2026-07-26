@@ -1,0 +1,38 @@
+[
+  {
+    "id": "TX001",
+    "category": "Food",
+    "amount": 120000,
+    "date": "2026-01-05"
+  },
+  {
+    "id": "TX002",
+    "category": "Transport",
+    "amount": 50000,
+    "date": "2026-01-10"
+  },
+  {
+    "id": "TX003",
+    "category": "Food",
+    "amount": 180000,
+    "date": "2026-02-02"
+  },
+  {
+    "id": "TX004",
+    "category": "Shopping",
+    "amount": 700000,
+    "date": "2026-02-12"
+  },
+  {
+    "id": "TX005",
+    "category": "Transport",
+    "amount": 90000,
+    "date": "2026-02-20"
+  },
+  {
+    "id": "TX006",
+    "category": "Food",
+    "amount": 250000,
+    "date": "2026-03-03"
+  }
+]
