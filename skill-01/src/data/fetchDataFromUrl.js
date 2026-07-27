@@ -19,7 +19,7 @@ async function fetchData (url) {
 
     let textResponse;
     try {
-        textREsponse = response.text;
+        textResponse = await response.text();
     } catch {
         throw new Error("Could not read the server response.");
     }

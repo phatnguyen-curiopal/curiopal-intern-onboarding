@@ -7,9 +7,9 @@ function validateTransaction(transaction, index) {
   }
 
   const missingFields = requiredFields.filter((field) => {
-    transaction[field] === null ||
+    return transaction[field] === null ||
       transaction[field] === undefined ||
-      transaction[field] == "";
+      transaction[field] === "";
   });
 
   if (missingFields.length >= 1) {
