@@ -1,4 +1,5 @@
-const { error } = require("console");
+"use strict";
+
 const fs = require("fs/promises");
 const path = require("path");
 
@@ -14,8 +15,8 @@ async function readLogFolder (folderPath) {
     }  
 
     const filePaths = [];
-    for (entry of entries) {
-        if (!entry.isFile() || path.extname(entry.name) != ".log") {
+    for (const entry of entries) {
+        if (!entry.isFile() || path.extname(entry.name) !== ".log") {
             continue;
         }
 
@@ -44,7 +45,7 @@ async function extractErrorLines(filePath) {
 async function getErrorsPerFile (filePaths) {
     const errorsPerFile = {};
 
-    for (filePath of filePaths) {
+    for (const filePath of filePaths) {
         let errorLines;
         try {
             errorLines = await extractErrorLines(filePath);
@@ -63,7 +64,7 @@ async function getErrorsPerFile (filePaths) {
 async function getErrorsPerHour (filePaths) {
     let errorLines = []
 
-    for(filePath of filePaths) {
+    for(const filePath of filePaths) {
         let fileErrorLines;
         try {
             fileErrorLines = await extractErrorLines(filePath);
@@ -78,7 +79,7 @@ async function getErrorsPerHour (filePaths) {
     const errorsPerHour = {};
 
     errorLines.forEach( (line) => {
-        hour = line.slice(0, 13);
+        const hour = line.slice(0, 13);
         if (hour in errorsPerHour) {
             errorsPerHour[hour] += 1;
         } else {
@@ -93,7 +94,7 @@ async function getErrorsPerHour (filePaths) {
 async function getTopErrorMessages(filePaths, nMessage) {
     let errorLines = []
 
-    for(filePath of filePaths) {
+    for(const filePath of filePaths) {
         let fileErrorLines;
         try {
             fileErrorLines = await extractErrorLines(filePath);
@@ -132,24 +133,42 @@ async function getTopErrorMessages(filePaths, nMessage) {
     }).slice(0, nMessage);
 }
 
-async function buildReport () {
+async function buildReport (errorsPerFile, errorsPerHour, topErrorMessages, outputPath) {
+    try {
+        const report = {
+            errorsPerFile,
+            errorsPerHour,
+            topErrorMessages
+        }
+        const reportJson = JSON.stringify(report, null, 2);
 
+        await fs.writeFile(outputPath, reportJson, "utf-8");
+    } catch (err) {
+        throw new Error(`Cannot write JSON file: ${err.message}`);
+    }
 }
 
 async function main () {
     const folderPath = process.env.FOLDER_PATH;
     const outputPath = process.env.OUTPUT_PATH;
+
+    if(!folderPath || !outputPath) {
+        console.log("Missing folder or ouput path");
+        return;
+    }
     
     console.log(folderPath);
     try {
         const filePaths = await readLogFolder(folderPath);
-        await getErrorsPerFile(filePaths);
-        await getErrorsPerHour(filePaths);
-        await getTopErrorMessages(filePaths, 2);
+        const errorsPerFile = await getErrorsPerFile(filePaths);
+        const errorsPerHour = await getErrorsPerHour(filePaths);
+        const topErrorMessages = await getTopErrorMessages(filePaths, 3);
+        await buildReport(errorsPerFile, errorsPerHour, topErrorMessages, outputPath);
     } catch (err) {
         console.log(err.message);
-        return 1;
+        process.exitCode = 1;
     }
+    process.exitCode = 0;
 }
 
 main();
