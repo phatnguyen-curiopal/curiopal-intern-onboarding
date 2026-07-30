@@ -26,7 +26,7 @@ async function readLogFolder (folderPath) {
 }
 
 
-//Only log lines contain an error
+//Only log lines containing an error
 async function extractErrorLines(filePath) {
     let lines;
     try {
@@ -45,7 +45,13 @@ async function getErrorsPerFile (filePaths) {
     const errorsPerFile = {};
 
     for (filePath of filePaths) {
-        const errorLines = await extractErrorLines(filePath);
+        let errorLines;
+        try {
+            errorLines = await extractErrorLines(filePath);
+        } catch (err) {
+            console.log(err.message);
+            continue;
+        }
         errorsPerFile[path.basename(filePath)] = errorLines.length;
     }
 
@@ -53,6 +59,35 @@ async function getErrorsPerFile (filePaths) {
     return errorsPerFile;
 }
 
+
+async function getErrorsPerHour (filePaths) {
+    let errorLines = []
+
+    for(filePath of filePaths) {
+        let fileErrorLines;
+        try {
+            fileErrorLines = await extractErrorLines(filePath);
+        } catch (err) {
+            console.log(err.message);
+            continue;
+        }
+        errorLines = [...errorLines, ...fileErrorLines];
+    }
+    console.log(errorLines.length);
+
+    const errorsPerHour = {};
+
+    errorLines.forEach( (line) => {
+        hour = line.slice(0, 13);
+        if (hour in errorsPerHour) {
+            errorsPerHour[hour] += 1;
+        } else {
+            errorsPerHour[hour] = 1;
+        }
+    })
+
+    console.log(errorsPerHour);
+}
 
 async function buildReport () {
 
@@ -66,6 +101,7 @@ async function main () {
     try {
         const filePaths = await readLogFolder(folderPath);
         await getErrorsPerFile(filePaths);
+        await getErrorsPerHour(filePaths);
     } catch (err) {
         console.log(err.message);
         return 1;
