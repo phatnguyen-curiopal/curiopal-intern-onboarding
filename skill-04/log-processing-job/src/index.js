@@ -26,7 +26,7 @@ async function readLogFolder (folderPath) {
 }
 
 
-//Only log lines containing an error
+//Only return lines containing an error
 async function extractErrorLines(filePath) {
     let lines;
     try {
@@ -87,6 +87,49 @@ async function getErrorsPerHour (filePaths) {
     })
 
     console.log(errorsPerHour);
+    return errorsPerHour;
+}
+
+async function getTopErrorMessages(filePaths, nMessage) {
+    let errorLines = []
+
+    for(filePath of filePaths) {
+        let fileErrorLines;
+        try {
+            fileErrorLines = await extractErrorLines(filePath);
+        } catch (err) {
+            console.log(err.message);
+            continue;
+        }
+        errorLines = [...errorLines, ...fileErrorLines];
+    }
+    console.log(errorLines.length);
+
+    const topMessages = {};
+
+    errorLines.forEach( (line) => {
+        const message = line.slice(31, );
+        if (message in topMessages) {
+            topMessages[message] += 1;
+        } else {
+            topMessages[message] = 1;
+        }
+    })
+
+    const topMessagesArray = Object.entries(topMessages).map( ([key, value]) => {
+        return {
+            message: key,
+            count: value
+        }
+    })
+
+    console.log(topMessagesArray.sort( (a, b) => {
+        return b.count - a.count;
+    }).slice(0, nMessage));
+
+    return topMessagesArray.sort( (a, b) => {
+        return b.count - a.count;
+    }).slice(0, nMessage);
 }
 
 async function buildReport () {
@@ -102,6 +145,7 @@ async function main () {
         const filePaths = await readLogFolder(folderPath);
         await getErrorsPerFile(filePaths);
         await getErrorsPerHour(filePaths);
+        await getTopErrorMessages(filePaths, 2);
     } catch (err) {
         console.log(err.message);
         return 1;
