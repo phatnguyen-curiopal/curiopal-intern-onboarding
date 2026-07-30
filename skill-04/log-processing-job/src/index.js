@@ -56,7 +56,6 @@ async function getErrorsPerFile (filePaths) {
         errorsPerFile[path.basename(filePath)] = errorLines.length;
     }
 
-    console.log("Errors per file: ", errorsPerFile);
     return errorsPerFile;
 }
 
@@ -74,7 +73,6 @@ async function getErrorsPerHour (filePaths) {
         }
         errorLines = [...errorLines, ...fileErrorLines];
     }
-    console.log(errorLines.length);
 
     const errorsPerHour = {};
 
@@ -87,7 +85,6 @@ async function getErrorsPerHour (filePaths) {
         }
     })
 
-    console.log(errorsPerHour);
     return errorsPerHour;
 }
 
@@ -104,7 +101,6 @@ async function getTopErrorMessages(filePaths, nMessage) {
         }
         errorLines = [...errorLines, ...fileErrorLines];
     }
-    console.log(errorLines.length);
 
     const topMessages = {};
 
@@ -123,10 +119,6 @@ async function getTopErrorMessages(filePaths, nMessage) {
             count: value
         }
     })
-
-    console.log(topMessagesArray.sort( (a, b) => {
-        return b.count - a.count;
-    }).slice(0, nMessage));
 
     return topMessagesArray.sort( (a, b) => {
         return b.count - a.count;
