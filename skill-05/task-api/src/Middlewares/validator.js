@@ -1,7 +1,7 @@
 const AppError = require("../Errors/app-error");
 
 function validateTitle(title) {
-  if (typeof title != string) {
+  if (typeof title != "string") {
     return "Title is not a string";
   }
 
@@ -21,17 +21,17 @@ function validateTitle(title) {
 const VALID_STATUSES = ["todo", "in_progress", "done"];
 
 function validateStatus(status) {
-  if (typeof status != string) {
-    return "Title is not a string";
+  if (typeof status != "string") {
+    return "Status is not a string";
   }
 
   trimmedStatus = status.trim();
 
   if (trimmedStatus.length === 0) {
-    return "Title is empty";
+    return "Status is empty";
   }
 
-  if (VALID_STATUSES.includes(status)) {
+  if (!VALID_STATUSES.includes(status)) {
     return "Invalid status";
   }
 
@@ -47,7 +47,7 @@ function validateDescription(description) {
 }
 
 function validateCreateTask(req, res, next) {
-  const allowedFields = ["title, description, status"];
+  const allowedFields = ["title", "description", "status"];
 
   const errors = {};
 
@@ -55,7 +55,9 @@ function validateCreateTask(req, res, next) {
     return !allowedFields.includes(field);
   });
 
-  if (unAllowedFields) {
+  console.log("unallowedFields: ", unAllowedFields);
+
+  if (unAllowedFields.length > 0) {
     next(new AppError(400, `Unallowed fields: ${unAllowedFields}`));
   }
 
@@ -64,14 +66,18 @@ function validateCreateTask(req, res, next) {
     next(new AppError(400, titleError));
   }
 
-  const descriptionError = validateTitle(req.body.description);
-  if (descriptionError) {
-    next(new AppError(400, descriptionError));
+  if (req.body.description) {
+    const descriptionError = validateDescription(req.body.description);
+    if (descriptionError) {
+      next(new AppError(400, descriptionError));
+    }
   }
 
-  const statusError = validateTitle(req.body.status);
-  if (statusError) {
-    next(new AppError(400, statusError));
+  if (req.body.status) {
+    const statusError = validateStatus(req.body.status);
+    if (statusError) {
+      next(new AppError(400, statusError));
+    }
   }
 
   next();
@@ -166,4 +172,7 @@ function validateTaskQuery(req, res, next) {
 
 module.exports = {
   validateCreateTask,
+  validateUpdateTask,
+  validateTaskQuery,
+  validateTaskId,
 };

@@ -2,12 +2,26 @@ const pool = require("../db");
 
 // POST /tasks
 async function createTask(task) {
+  const fields = []
+  const values = [];
+  fields.push("title");
+  values.push(task.title);
+
+  if(task.description) {
+    fields.push("description");
+    values.push(task.description);
+  }
+
+  if(task.status) {
+    fields.push("status");
+    values.push(task.status);
+  }
   const [result] = await pool.execute(
     `
-            INSERT INTO tasks(title, description, status)
-            VALUES (?, ?, ?)
+            INSERT INTO tasks(${fields.join(", ")})
+            VALUES (${Array(values.length).fill("?").join(", ")})
         `,
-    [task.title, task.description, task.status],
+    values,
   );
 
   return getTaskById(result.insertId);
@@ -30,16 +44,17 @@ async function getTasks(status, limit, offset) {
         LIMIT ?
         OFFSET ? 
     `;
-  values.push(limit, offset);
+  values.push(limit);
+  values.push(offset);
 
-  const [rows] = await pool.execute(sql, offset);
+  const [rows] = await pool.query(sql, values);
 
   return rows;
 }
 
 //GET /tasks/:id
 async function getTaskById(id) {
-  const [result] = pool.execute(
+  const [result] = await pool.execute(
     `
         SELECT id, title, description, status
         FROM tasks
@@ -52,7 +67,7 @@ async function getTaskById(id) {
 }
 
 //PATCH /tasks/:id
-async function patchTask(id, updates) {
+async function updateTask(id, updates) {
   const fields = [];
   const values = [];
 
@@ -73,7 +88,7 @@ async function patchTask(id, updates) {
 
   values.push(id);
 
-  const [result] = pool.execute(
+  const [result] = await pool.execute(
     `
         UPDATE tasks
         SET ${fields.join(", ")}
@@ -101,6 +116,6 @@ module.exports = {
   createTask,
   getTasks,
   getTaskById,
-  patchTask,
+  updateTask,
   deleteTask,
 };
