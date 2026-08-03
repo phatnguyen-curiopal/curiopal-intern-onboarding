@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS tasks (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    status ENUM('todo', 'in_progress', 'done') NOT NULL DEFAULT 'todo',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP 
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_tasks_status ON tasks(status);
